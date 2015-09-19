@@ -1,7 +1,7 @@
 #ifndef _VEC3F_H_
 #define _VEC3F_H_
 #include <math.h>
-
+#define zeromem(x,y) memset(x,0,y);
 namespace Vektor
 {
 	class vec3f
