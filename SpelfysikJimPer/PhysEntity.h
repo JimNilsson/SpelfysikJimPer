@@ -20,6 +20,7 @@ public:
 	vec3f gravForce;
 	vec3f magnusForce;
 	vec3f dragForce;
+	vec3f resForce;
 };
 
 

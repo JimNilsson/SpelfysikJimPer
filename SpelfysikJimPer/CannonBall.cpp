@@ -2,6 +2,7 @@
 
 CannonBall::CannonBall(float mass, float radius, vec3f position, vec3f linearVel, vec3f angularVel)
 {
+	launch = false;
 	this->mass = mass;
 	this->radius = radius;
 	pos = position;
@@ -16,7 +17,6 @@ CannonBall::CannonBall(float mass, float radius, vec3f position, vec3f linearVel
 
 	SDL_Surface* temp;
 	sprite = SDL_LoadBMP("ball.bmp");
-	
 
 }
 
@@ -36,8 +36,8 @@ void CannonBall::update(float dt, vec3f wind)
 
 	dragForce = normalize(linVel - wind) * (-0.5f * AIR_DENSITY * area * coeffDrag * linVelMagnitude * linVelMagnitude);
 	magnusForce = cross(normalize(linVel - wind), normalize(angVel)) * (0.5 * coeffMagnus * AIR_DENSITY * linVelMagnitude * linVelMagnitude * area);
-
-	vec3f acc = (dragForce + magnusForce  + gravForce) / mass;
+	resForce = dragForce + magnusForce + gravForce;
+	vec3f acc = resForce / mass;
 
 	pos = pos + (linVel * dt) + ((acc * dt * dt) / 2);
 	linVel = linVel + (acc * dt);
@@ -47,13 +47,19 @@ void CannonBall::update(float dt, vec3f wind)
 void CannonBall::render(SDL_Surface* screen, SDL_Renderer* rend)
 {
 	SDL_Rect dest;
-	dest.h = 4;
-	dest.w = 4;
+	dest.h = 2;
+	dest.w = 2;
 	dest.x = (int)pos.x;
 	dest.y = -1 * (int)pos.z + (SCR_H / 2);
 	SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
-	
-	dest.y = (int)pos.y + (SCR_H / 2);
+	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4);
 	SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
 	
+}
+
+void CannonBall::printInfo()
+{
+	printf("Velocity: %.2f, %.2f, %.2f\n", linVel.x, linVel.y, linVel.z);
+	printf("Total force: %.2f, %.2f, %.2f\n", resForce.x, resForce.y, resForce.z);
+
 }

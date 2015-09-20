@@ -8,6 +8,7 @@
 #include <Windows.h>
 #include <time.h>
 #include <math.h>
+#include <string>
 #include "vec3f.h"
 
 #endif
