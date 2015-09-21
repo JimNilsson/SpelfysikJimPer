@@ -12,5 +12,6 @@
 #define SPHERE_LAM_TURB_THRESHOLD 250000
 #define PI 3.14159265f
 #define GRAVACC 9.82f
+#define EPSILON 0.001f
 
 #endif

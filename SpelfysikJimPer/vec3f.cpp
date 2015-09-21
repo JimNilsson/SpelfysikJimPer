@@ -5,6 +5,8 @@ using namespace Vektor;
 vec3f Vektor::normalize(vec3f v)
 {
 	float d = sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
+	if (d < 0.001f)
+		return vec3f(0, 0, 0);
 	return vec3f(v.x / d, v.y / d, v.z / d);
 }
 
