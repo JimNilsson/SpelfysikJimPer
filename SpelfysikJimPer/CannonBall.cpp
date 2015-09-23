@@ -34,11 +34,11 @@ void CannonBall::update(float dt, vec3f wind)
 	coeffMagnus = linVelMagnitude > EPSILON ? (radius * length(angVel)) / (linVelMagnitude) : 0;
 
 	dragForce = normalize(linVel - wind) * (-0.5f * AIR_DENSITY * area * coeffDrag * linVelMagnitude * linVelMagnitude);
-	magnusForce = cross(normalize(linVel - wind), normalize(angVel)) * (0.5 * coeffMagnus * AIR_DENSITY * linVelMagnitude * linVelMagnitude * area);
+	magnusForce = cross(normalize(linVel - wind), normalize(angVel)) * (0.5f * coeffMagnus * AIR_DENSITY * linVelMagnitude * linVelMagnitude * area);
 	resForce = dragForce + magnusForce + gravForce;
 	vec3f acc = resForce / mass;
 
-	pos = pos + (linVel * dt) + ((acc * dt * dt) / 2);
+	pos = pos + (linVel * dt) + ((acc * dt * dt) / 2.0f);
 	linVel = linVel + (acc * dt);
 	
 }

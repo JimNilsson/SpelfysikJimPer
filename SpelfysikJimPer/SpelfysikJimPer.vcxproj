@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="CannonBall.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RopeBall.cpp" />
     <ClCompile Include="SimpleTimerClass.cpp" />
     <ClCompile Include="vec3f.cpp" />
   </ItemGroup>
@@ -141,6 +142,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Includes.h" />
     <ClInclude Include="PhysEntity.h" />
+    <ClInclude Include="RopeBall.h" />
     <ClInclude Include="SimpleTimerClass.h" />
     <ClInclude Include="vec3f.h" />
   </ItemGroup>

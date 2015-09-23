@@ -20,7 +20,6 @@ public:
 	void printInfo();
 
 	float radius;
-	float area;
 	bool launch;
 
 	SDL_Surface* sprite;

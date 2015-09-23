@@ -11,7 +11,12 @@ namespace Vektor
 		vec3f() { x = 0; y = 0; z = 0; }
 		vec3f(float a, float b, float c) { x = a; y = b; z = c; }
 		vec3f(const vec3f& o) { x = o.x; y = o.y; z = o.z; }
-		vec3f& operator=(const vec3f& o) { x = o.x; y = o.y; z = o.z; return *this; }
+		vec3f& operator=(const vec3f& o) 
+		{ 
+			if(&o != this)
+				x = o.x; y = o.y; z = o.z; 
+			return *this;
+		}
 
 		vec3f operator/(float d)
 		{

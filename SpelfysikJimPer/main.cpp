@@ -1,6 +1,7 @@
 #include "Includes.h"
 #include "PhysEntity.h"
 #include "CannonBall.h"
+#include "RopeBall.h"
 #include <fstream>
 
 int commandHandler(void* data);
@@ -18,10 +19,10 @@ vec3f wind = vec3f(0.0f, 0.0f, 0.0f); // same as above
 
 int main(int argc, char** argv)
 {
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 	SDL_Window* pWnd = nullptr;
 	SDL_Renderer* pRend = nullptr;
-	SDL_Event inEvent;
+
 	gBallLock = SDL_CreateMutex();
 	gRenderLock = SDL_CreateMutex();
 
@@ -35,22 +36,29 @@ int main(int argc, char** argv)
 
 	CannonBall ball = CannonBall(8.0f, 0.06f, vec3f(10, 0, 0), vec3f(140.0f, 10.0f, 40.0f), vec3f(0.0f, 0.0f, 68.0f));
 	SDL_Thread* commandThreadID = SDL_CreateThread(commandHandler, "commandThread", (void*)&ball);
-	
+	RopeBall rball = RopeBall(800.0f, 1.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
 	
 	while (!exitCond)
 	{
 		timer.update();
+		rball.update((float)timer.deltaTime, wind);
+		
 		SDL_LockMutex(gBallLock);
 		if (ball.launch == true)
 		{
-			ball.update(timer.deltaTime, wind);
-
-			SDL_LockMutex(gRenderLock);
-			ball.render(gSurf, pRend);
-			SDL_UnlockMutex(gRenderLock);
+			ball.update((float)timer.deltaTime, wind);
 		}
 		SDL_UnlockMutex(gBallLock);
+
+		SDL_LockMutex(gRenderLock);
+		
+		clearBackground();
+		ball.render(gSurf, pRend);
+		rball.render(gSurf, pRend);
 		SDL_UpdateWindowSurface(pWnd);
+
+		SDL_UnlockMutex(gRenderLock);
+		
 	}
 	SDL_WaitThread(commandThreadID, NULL);
 	SDL_DestroyMutex(gBallLock);
@@ -72,7 +80,7 @@ int commandHandler(void* data)
 	{
 		std::getline(std::cin, command);
 		int index = 0;
-		for (int i = 0; i < command.size() && index < 10; i++)
+		for (unsigned int i = 0; i < command.size() && index < 10; i++)
 		{
 			args[index].clear();
 			while (command[i] != ' ' && command[i] != '\0')

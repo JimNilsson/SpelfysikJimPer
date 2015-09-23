@@ -2,6 +2,7 @@
 #define _PHYSENTITY_H_
 #include "vec3f.h"
 
+
 using namespace Vektor;
 
 class PhysEntity
@@ -11,6 +12,7 @@ public:
 	~PhysEntity() {};
 
 	float mass;
+	float area;
 	float coeffDrag;
 	float coeffMagnus;
 

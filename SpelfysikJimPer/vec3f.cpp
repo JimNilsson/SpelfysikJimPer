@@ -22,6 +22,8 @@ vec3f Vektor::cross(vec3f v, vec3f u)
 
 vec3f Vektor::projectOnVec(vec3f v, vec3f u)
 {
+	if (length(u) < 0.01f)
+		return vec3f(0, 0, 0);
 	return (u * (dot(v, u) / dot(u, u)));
 }
 
