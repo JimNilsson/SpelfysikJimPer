@@ -6,6 +6,7 @@
 
 int commandHandler(void* data);
 void set3f(float& x, float& y, float& z, std::string* args);//Helper for commandHandler
+void initBGTex();
 void clearBackground();
 void cmdHelp(std::string* args, CannonBall* ball);
 
@@ -13,6 +14,9 @@ SDL_mutex* gBallLock = NULL;
 SDL_mutex* gRenderLock = NULL;
 
 SDL_Surface* gSurf = nullptr;
+SDL_Window* gWnd = nullptr;
+SDL_Renderer* gRend = nullptr;
+SDL_Texture* gBGTex = NULL;
 
 bool exitCond = false; //Only ever modified in commandHandler
 vec3f wind = vec3f(0.0f, 0.0f, 0.0f); // same as above
@@ -20,23 +24,23 @@ vec3f wind = vec3f(0.0f, 0.0f, 0.0f); // same as above
 int main(int argc, char** argv)
 {
 	srand((unsigned int)time(NULL));
-	SDL_Window* pWnd = nullptr;
-	SDL_Renderer* pRend = nullptr;
+	
 
 	gBallLock = SDL_CreateMutex();
 	gRenderLock = SDL_CreateMutex();
 
 	SDL_Init(SDL_INIT_VIDEO);
-	pWnd = SDL_CreateWindow("Cannon Ball Marksman", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCR_W, SCR_H, SDL_WINDOW_SHOWN);
-	gSurf = SDL_GetWindowSurface(pWnd);
-	pRend = SDL_CreateRenderer(pWnd, -1, SDL_RENDERER_ACCELERATED);
+	gWnd = SDL_CreateWindow("Cannonball Marksman", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCR_W, SCR_H, SDL_WINDOW_SHOWN);
+	gSurf = SDL_GetWindowSurface(gWnd);
+	gRend = SDL_CreateRenderer(gWnd, -1, SDL_RENDERER_ACCELERATED);
 	SimpleTimerClass timer;
+	initBGTex();
 
 	clearBackground();
 
 	CannonBall ball = CannonBall(8.0f, 0.06f, vec3f(10, 0, 0), vec3f(140.0f, 10.0f, 40.0f), vec3f(0.0f, 0.0f, 68.0f));
 	SDL_Thread* commandThreadID = SDL_CreateThread(commandHandler, "commandThread", (void*)&ball);
-	RopeBall rball = RopeBall(800.0f, 1.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
+	RopeBall rball = RopeBall(1600.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
 	
 	while (!exitCond)
 	{
@@ -53,9 +57,10 @@ int main(int argc, char** argv)
 		SDL_LockMutex(gRenderLock);
 		
 		clearBackground();
-		ball.render(gSurf, pRend);
-		rball.render(gSurf, pRend);
-		SDL_UpdateWindowSurface(pWnd);
+		ball.render();
+		rball.render();
+		SDL_RenderPresent(gRend);
+	//	SDL_UpdateWindowSurface(gWnd);
 
 		SDL_UnlockMutex(gRenderLock);
 		
@@ -63,8 +68,9 @@ int main(int argc, char** argv)
 	SDL_WaitThread(commandThreadID, NULL);
 	SDL_DestroyMutex(gBallLock);
 	SDL_DestroyMutex(gRenderLock);
-	SDL_DestroyWindow(pWnd);
-	SDL_DestroyRenderer(pRend);
+	SDL_DestroyTexture(gBGTex);
+	SDL_DestroyWindow(gWnd);
+	SDL_DestroyRenderer(gRend);
 	SDL_Quit();
 	return 0;
 }
@@ -200,8 +206,18 @@ void set3f(float& x, float& y, float& z, std::string* args)
 
 void clearBackground()
 {
+
+
+	SDL_RenderCopy(gRend, gBGTex, NULL, NULL);
+
+	
+}
+
+void initBGTex()
+{
 	SDL_Surface* temp = NULL;
 	temp = SDL_LoadBMP("xzbackground.bmp");
+
 	SDL_Rect rdst;
 	rdst.x = 0;
 	rdst.y = 0;
@@ -209,11 +225,17 @@ void clearBackground()
 	rdst.w = SCR_W;
 	SDL_BlitScaled(temp, NULL, gSurf, &rdst);
 	SDL_FreeSurface(temp);
+	temp = NULL;
+
 	temp = SDL_LoadBMP("xybackground.bmp");
+
 	rdst.x = 0;
 	rdst.y = SCR_H / 2;
 	rdst.h = SCR_H / 2;
 	rdst.w = SCR_W;
+
 	SDL_BlitScaled(temp, NULL, gSurf, &rdst);
 	SDL_FreeSurface(temp);
+
+	gBGTex = SDL_CreateTextureFromSurface(gRend, gSurf);
 }

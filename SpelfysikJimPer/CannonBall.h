@@ -16,14 +16,15 @@ public:
 	CannonBall(float mass, float radius, vec3f position, vec3f linearVel, vec3f angularVel);
 	
 	void update(float dt, vec3f wind);
-	void render(SDL_Surface* screen, SDL_Renderer* rend);
+	void render();
 	void printInfo();
 
 	float radius;
 	bool launch;
 
 	SDL_Surface* sprite;
-	SDL_Rect rcSprite;
+	SDL_Texture* spriteTex;
+
 private:
 	CannonBall() {};
 };

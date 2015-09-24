@@ -2,6 +2,10 @@
 #include <math.h>
 #include <DirectXMath.h>
 
+extern SDL_Renderer* gRend;
+extern SDL_Surface* gSurf;
+extern SDL_Window* gWnd;
+
 RopeBall::RopeBall(float mass, float radius, float ropelength, vec3f anchorpoint)
 {
 	this->mass = mass;
@@ -15,16 +19,19 @@ RopeBall::RopeBall(float mass, float radius, float ropelength, vec3f anchorpoint
 	forceTang = vec3f(0, 0, 0);
 	linVel = vec3f(0, 0, 0);
 	angVel = vec3f(0, 0, 0);
+	sprite = NULL;
+	spriteTex = NULL;
+
+
 	sprite = SDL_LoadBMP("ball.bmp");
-	rcSprite.h = 32;
-	rcSprite.w = 32;
-	rcSprite.x = 0;
-	rcSprite.y = 0;
+	spriteTex = SDL_CreateTextureFromSurface(gRend, sprite);
+	SDL_FreeSurface(sprite);
 }
 
 RopeBall::~RopeBall()
 {
-	SDL_FreeSurface(sprite);
+	if (spriteTex != NULL)
+		SDL_DestroyTexture(spriteTex);
 }
 
 void RopeBall::update(float dt, vec3f wind)
@@ -63,16 +70,18 @@ void RopeBall::update(float dt, vec3f wind)
 	angVel = angVel + (accAng * dt);
 }
 
-void RopeBall::render(SDL_Surface * screen, SDL_Renderer * rend)
+void RopeBall::render()
 {
 	SDL_Rect dest;
-	dest.h = 8;// (int)(2.0f * radius);
-	dest.w = 8;// (int)(2.0f * radius);
-	dest.x = (int)pos.x;
+	dest.h = (int)(2.0f * radius);
+	dest.w = (int)(2.0f * radius);
+	dest.x = (int)(pos.x - radius);
 	dest.y = -1 * (int)pos.z + (SCR_H / 2);
-	SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
+	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
+	//SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
 	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4);
-	SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
+	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
+	//SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
 
 	SDL_Point a;
 	SDL_Point b;
@@ -80,6 +89,6 @@ void RopeBall::render(SDL_Surface * screen, SDL_Renderer * rend)
 	a.y = (int)((SCR_H / 2) - anchorpoint.z);
 	b.x = (int)pos.x;
 	b.y = (int)((SCR_H / 2) - pos.z);
-//	SDL_SetRenderDrawColor(rend, 0x00, 0xFF, 0x00, 0xFF);
-//	SDL_RenderDrawLine(rend, a.x, a.y, b.x, b.y);
+	SDL_SetRenderDrawColor(gRend, 0x00, 0xFF, 0x00, 0xFF);
+	SDL_RenderDrawLine(gRend, a.x, a.y, b.x, b.y);
 }

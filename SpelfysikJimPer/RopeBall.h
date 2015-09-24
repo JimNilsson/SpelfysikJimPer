@@ -19,11 +19,12 @@ public:
 	vec3f forceTang;
 
 	void update(float dt, vec3f wind);
-	void render(SDL_Surface* screen, SDL_Renderer* rend);
+	void render();
 private:
 	RopeBall();
-	SDL_Rect rcSprite;
+	
 	SDL_Surface* sprite;
+	SDL_Texture* spriteTex;
 
 };
 

@@ -1,5 +1,9 @@
 #include "CannonBall.h"
 
+extern SDL_Renderer* gRend;
+extern SDL_Window* gWnd;
+extern SDL_Surface* gSurf;
+
 CannonBall::CannonBall(float mass, float radius, vec3f position, vec3f linearVel, vec3f angularVel)
 {
 	launch = false;
@@ -10,18 +14,18 @@ CannonBall::CannonBall(float mass, float radius, vec3f position, vec3f linearVel
 	angVel = angularVel;
 	area = PI * radius * radius;
 	gravForce = vec3f(0, 0, -(mass*GRAVACC));
-	rcSprite.h = 32;
-	rcSprite.w = 32;
-	rcSprite.x = 0;
-	rcSprite.y = 0;
+	sprite = NULL;
+	spriteTex = NULL;
 
 	sprite = SDL_LoadBMP("ball.bmp");
-
+	spriteTex = SDL_CreateTextureFromSurface(gRend, sprite);
+	SDL_FreeSurface(sprite);
 }
 
 CannonBall::~CannonBall()
 {
-	SDL_FreeSurface(sprite);
+	if (spriteTex != NULL)
+		SDL_DestroyTexture(spriteTex);
 }
 
 void CannonBall::update(float dt, vec3f wind)
@@ -43,16 +47,19 @@ void CannonBall::update(float dt, vec3f wind)
 	
 }
 
-void CannonBall::render(SDL_Surface* screen, SDL_Renderer* rend)
+void CannonBall::render()
 {
+	
 	SDL_Rect dest;
 	dest.h = 2;
 	dest.w = 2;
 	dest.x = (int)pos.x;
 	dest.y = -1 * (int)pos.z + (SCR_H / 2);
-	SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
+	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
+	//SDL_BlitScaled(sprite, NULL, screen, &dest);
 	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4);
-	SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
+	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
+	//SDL_BlitScaled(sprite, NULL, screen, &dest);
 	
 }
 
