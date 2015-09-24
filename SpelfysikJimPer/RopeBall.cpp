@@ -78,10 +78,10 @@ void RopeBall::render()
 	dest.x = (int)(pos.x - radius);
 	dest.y = -1 * (int)pos.z + (SCR_H / 2);
 	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
-	//SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
-	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4);
+
+	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4) - radius;
 	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
-	//SDL_BlitScaled(sprite, &rcSprite, screen, &dest);
+
 
 	SDL_Point a;
 	SDL_Point b;
@@ -90,5 +90,8 @@ void RopeBall::render()
 	b.x = (int)pos.x;
 	b.y = (int)((SCR_H / 2) - pos.z);
 	SDL_SetRenderDrawColor(gRend, 0x00, 0xFF, 0x00, 0xFF);
+	SDL_RenderDrawLine(gRend, a.x, a.y, b.x, b.y);
+	a.y = (int)((SCR_H / 2) - anchorpoint.y) + (SCR_H / 4);
+	b.y = (int)((SCR_H / 2) + pos.y) + (SCR_H / 4);
 	SDL_RenderDrawLine(gRend, a.x, a.y, b.x, b.y);
 }

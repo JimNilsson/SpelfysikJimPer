@@ -24,7 +24,6 @@ vec3f wind = vec3f(0.0f, 0.0f, 0.0f); // same as above
 int main(int argc, char** argv)
 {
 	srand((unsigned int)time(NULL));
-	
 
 	gBallLock = SDL_CreateMutex();
 	gRenderLock = SDL_CreateMutex();
@@ -40,7 +39,7 @@ int main(int argc, char** argv)
 
 	CannonBall ball = CannonBall(8.0f, 0.06f, vec3f(10, 0, 0), vec3f(140.0f, 10.0f, 40.0f), vec3f(0.0f, 0.0f, 68.0f));
 	SDL_Thread* commandThreadID = SDL_CreateThread(commandHandler, "commandThread", (void*)&ball);
-	RopeBall rball = RopeBall(1600.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
+	RopeBall rball = RopeBall(160000.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
 	
 	while (!exitCond)
 	{
@@ -60,7 +59,6 @@ int main(int argc, char** argv)
 		ball.render();
 		rball.render();
 		SDL_RenderPresent(gRend);
-	//	SDL_UpdateWindowSurface(gWnd);
 
 		SDL_UnlockMutex(gRenderLock);
 		
