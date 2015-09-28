@@ -37,3 +37,4 @@ float Vektor::length(vec3f v)
 	return sqrt(dot(v, v));
 }
 
+

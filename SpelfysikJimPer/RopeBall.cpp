@@ -46,7 +46,7 @@ void RopeBall::update(float dt, vec3f wind)
 	
 	dragForce = windDir * (0.5f * AIR_DENSITY * area * coeffDrag * windMagnitude * windMagnitude);
 	
-	float angle = acos(dot(vec3f(0, 0, -1.0f), atopDir));
+	//float angle = acos(dot(vec3f(0, 0, -1.0f), atopDir));
 	//forceRope = atopDir * (mass * GRAVACC + (length(dragForce) * sinf(angle))) * (-1); //dont even need this
 	vec3f dragForceTangent = projectOnPlane(dragForce, atopDir);
 	vec3f gravForceTangent = projectOnPlane(gravForce, atopDir);
@@ -70,6 +70,7 @@ void RopeBall::update(float dt, vec3f wind)
 	angVel = angVel + (accAng * dt);
 }
 
+
 void RopeBall::render()
 {
 	SDL_Rect dest;
@@ -81,7 +82,6 @@ void RopeBall::render()
 
 	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4) - radius;
 	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
-
 
 	SDL_Point a;
 	SDL_Point b;

@@ -18,6 +18,21 @@ namespace Vektor
 			return *this;
 		}
 
+		bool operator==(vec3f& o)
+		{
+			if (fabsf(x - o.x) > 0.01f)
+				return false;
+			if (fabsf(y - o.y) > 0.01f)
+				return false;
+			if (fabsf(z - o.z) > 0.01f)
+				return false;
+			return true;
+		}
+		bool operator!=(vec3f& o)
+		{
+			return !(*this == o);
+		}
+
 		vec3f operator/(float d)
 		{
 			return vec3f(x / d, y / d, z / d);

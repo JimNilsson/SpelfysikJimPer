@@ -6,6 +6,7 @@ extern SDL_Surface* gSurf;
 
 CannonBall::CannonBall(float mass, float radius, vec3f position, vec3f linearVel, vec3f angularVel)
 {
+	ZeroMemory(this, sizeof(CannonBall));
 	launch = false;
 	this->mass = mass;
 	this->radius = radius;
@@ -30,22 +31,65 @@ CannonBall::~CannonBall()
 
 void CannonBall::update(float dt, vec3f wind)
 {
+	resForce = fricForce = magnusForce = dragForce = vec3f(0,0,0);
 	float linVelMagnitude = length(linVel - wind);
 	float angVelMagnitude = length(angVel);
 	
+	if (pos.z - radius > 0.0f)//Only consider magnusforce if airborne
+	{
+		coeffMagnus = linVelMagnitude > EPSILON ? (radius * length(angVel)) / (linVelMagnitude) : 0;
+		magnusForce = cross(normalize(angVel), normalize(linVel - wind)) * (0.5f * coeffMagnus * AIR_DENSITY * linVelMagnitude * linVelMagnitude * area);
+	}
+	if (pos.z - radius <= 0.0f && linVel.z < 0.01f) //We have collision with ground
+	{
+		float e = 0.60f; //Coefficient of restitution
+		float f = 1.16f; //Coefficient of friction
+		float fr = 0.08f; //Coefficient of rollfriction
+		vec3f ep = vec3f(0.0f, 0.0f, 1.0f); //Line of action will be perpendicular to the ground
+		//ep is also the normal of the ground plane
+		vec3f vvn = projectOnPlane(linVel, ep);
+		vec3f vwn = cross(ep, angVel) * radius;
+		vec3f en = normalize(vvn + vwn) * -1.0f; //Direction of friction force
+		
+		if (linVel.z < -1.0f)//Bounce only for impact speed higher than -1m/s
+		{
+			pos.z = radius;
+			float vp = dot(linVel, ep);
+			float up = vp * e * -1.0f;
+			linVel = linVel + (ep + (en * f)) * (up - vp);
+			angVel = angVel + (cross(en, ep) * ((mass*radius*f*(up - vp)) / (2.0f*radius)));
+			printf("Linvel = %.2f, %.2f, %.2f\n", linVel.x, linVel.y, linVel.z);
+			printf("Angvel = %.2f, %.2f, %.2f\n", angVel.x, angVel.y, angVel.z);
+		}
+		else if (vvn != (vwn * -1.0f)) //glide phase
+		{
+			linVel.z = 0.0f;
+			fricForce = en * f * GRAVACC * mass;//affects linear acceleration
+			angAcc = cross(en, ep) * ((5.0f * f * GRAVACC) / (2.0f * radius));	
+		}
+		else //roll phase
+		{
+			linVel.z = 0.0f;
+			fricForce = normalize(linVel) * fr * GRAVACC * mass * -1.0f;
+			angAcc = cross(en, ep) * ((5.0f * fr * GRAVACC) / (2.0f * radius));
+		}
+	}
+
+	//We always have drag (well unless there's no wind and the ball is standing still)
 	float reynold = (AIR_DENSITY * linVelMagnitude * radius * 2) / AIR_VISCOSITY;
 	coeffDrag = reynold < SPHERE_LAM_TURB_THRESHOLD ? CD_SPHERE_LAMINAR : CD_SPHERE_TURBULENT;
-	coeffMagnus = linVelMagnitude > EPSILON ? (radius * length(angVel)) / (linVelMagnitude) : 0;
-
 	dragForce = normalize(linVel - wind) * (-0.5f * AIR_DENSITY * area * coeffDrag * linVelMagnitude * linVelMagnitude);
-	magnusForce = cross(normalize(linVel - wind), normalize(angVel)) * (0.5f * coeffMagnus * AIR_DENSITY * linVelMagnitude * linVelMagnitude * area);
-	resForce = dragForce + magnusForce + gravForce;
-	vec3f acc = resForce / mass;
+	
+	resForce = dragForce + magnusForce + gravForce + fricForce;
+	linAcc = resForce / mass;
 
-	pos = pos + (linVel * dt) + ((acc * dt * dt) / 2.0f);
-	linVel = linVel + (acc * dt);
+	pos = pos + (linVel * dt) + ((linAcc * dt * dt) / 2.0f);
+	linVel = linVel + (linAcc * dt);
+	angVel = angVel + angAcc * dt;
+	
 	
 }
+
 
 void CannonBall::render()
 {
@@ -71,6 +115,11 @@ void CannonBall::printInfo()
 	printf("Angular Velocity: (%.2f, %.2f, %.2f) rad/s\n", angVel.x, angVel.y, angVel.z);
 	printf("Drag force: (%.2f, %.2f, %.2f) N\n", dragForce.x, dragForce.y, dragForce.z);
 	printf("Magnus force: (%.2f, %.2f, %.2f) N\n", magnusForce.x, magnusForce.y, magnusForce.z);
+	printf("Friction force: (%.2f, %.2f, %.2f) N\n", fricForce.x, fricForce.y, fricForce.z);
 	printf("Total force: (%.2f, %.2f, %.2f) N\n", resForce.x, resForce.y, resForce.z);
+	if (linVel == (cross(angVel, vec3f(0, 0, 1)) * radius))
+		printf("ROLLING\n");
+	else
+		printf("GLIDING\n");
 
 }

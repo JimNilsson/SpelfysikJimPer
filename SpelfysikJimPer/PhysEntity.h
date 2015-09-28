@@ -18,10 +18,13 @@ public:
 
 	vec3f pos;
 	vec3f linVel;
+	vec3f linAcc;
 	vec3f angVel;
+	vec3f angAcc;
 	vec3f gravForce;
 	vec3f magnusForce;
 	vec3f dragForce;
+	vec3f fricForce;
 	vec3f resForce;
 };
 
