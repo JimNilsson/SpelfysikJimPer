@@ -18,7 +18,8 @@ CannonBall::CannonBall(float mass, float radius, vec3f position, vec3f linearVel
 	sprite = NULL;
 	spriteTex = NULL;
 
-	sprite = SDL_LoadBMP("ball.bmp");
+	sprite = SDL_LoadBMP("ball2.bmp");
+	SDL_SetColorKey(sprite, SDL_TRUE, SDL_MapRGB(sprite->format, 0, 0xFF, 0xFF));
 	spriteTex = SDL_CreateTextureFromSurface(gRend, sprite);
 	SDL_FreeSurface(sprite);
 }
@@ -43,7 +44,7 @@ void CannonBall::update(float dt, vec3f wind)
 	if (pos.z - radius <= 0.0f && linVel.z < 0.01f) //We have collision with ground
 	{
 		float e = 0.60f; //Coefficient of restitution
-		float f = 1.16f; //Coefficient of friction
+		float f = 0.16f; //Coefficient of friction
 		float fr = 0.08f; //Coefficient of rollfriction
 		vec3f ep = vec3f(0.0f, 0.0f, 1.0f); //Line of action will be perpendicular to the ground
 		//ep is also the normal of the ground plane
@@ -57,7 +58,7 @@ void CannonBall::update(float dt, vec3f wind)
 			float vp = dot(linVel, ep);
 			float up = vp * e * -1.0f;
 			linVel = linVel + (ep + (en * f)) * (up - vp);
-			angVel = angVel + (cross(en, ep) * ((mass*radius*f*(up - vp)) / (2.0f*radius)));
+			angVel = angVel + (cross(en, ep) * ((5.0f* f * (up - vp)) / (2.0f * radius)));
 			printf("Linvel = %.2f, %.2f, %.2f\n", linVel.x, linVel.y, linVel.z);
 			printf("Angvel = %.2f, %.2f, %.2f\n", angVel.x, angVel.y, angVel.z);
 		}
@@ -95,10 +96,10 @@ void CannonBall::render()
 {
 	
 	SDL_Rect dest;
-	dest.h = 2;
-	dest.w = 2;
-	dest.x = (int)pos.x;
-	dest.y = -1 * (int)pos.z + (SCR_H / 2);
+	dest.h = max(2,(int)(radius*2.0f));
+	dest.w = max(2, (int)(radius*2.0f));
+	dest.x = (int)pos.x - radius;
+	dest.y = -1 * (int)pos.z - radius + (SCR_H / 2);
 	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
 	//SDL_BlitScaled(sprite, NULL, screen, &dest);
 	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4);

@@ -23,7 +23,8 @@ RopeBall::RopeBall(float mass, float radius, float ropelength, vec3f anchorpoint
 	spriteTex = NULL;
 
 
-	sprite = SDL_LoadBMP("ball.bmp");
+	sprite = SDL_LoadBMP("ball2.bmp");
+	SDL_SetColorKey(sprite, SDL_TRUE, SDL_MapRGB(sprite->format, 0, 0xFF, 0xFF));
 	spriteTex = SDL_CreateTextureFromSurface(gRend, sprite);
 	SDL_FreeSurface(sprite);
 }

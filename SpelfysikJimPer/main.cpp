@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
 	clearBackground();
 
-	CannonBall ball = CannonBall(8.0f, 0.06f, vec3f(10, 0, 0), vec3f(140.0f, 10.0f, 40.0f), vec3f(0.0f, 0.0f, 68.0f));
+	CannonBall ball = CannonBall(263860.0f, 2.0f, vec3f(10, 0, 1.0f), vec3f(140.0f, 10.0f, 40.0f), vec3f(0.0f, 0.0f, 68.0f));
 	SDL_Thread* commandThreadID = SDL_CreateThread(commandHandler, "commandThread", (void*)&ball);
 	RopeBall rball = RopeBall(160000.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
 	
@@ -112,7 +112,8 @@ void cmdHelp(std::string* args, CannonBall* ball)
 		printf("setangvel x y z     Sets angular velocity of ball\n");
 		printf("setwind x y z       Sets wind velocity\n");
 		printf("setmass m           Sets mass of cannonball\n");
-		printf("reset               Sets all values to zero.\n");
+		printf("setradius r         Sets radius of cannonball");
+		printf("reset               Sets position, lin. velocity, ang. velocity and wind to 0.\n");
 		printf("launch              Launches the ball\n");
 		printf("clear               Clears the trajectory from screen\n");
 		
@@ -135,7 +136,7 @@ void cmdHelp(std::string* args, CannonBall* ball)
 	}
 	else if (args[0].compare("reset") == 0)
 	{
-		ball->pos = vec3f(0, 0, 0);
+		ball->pos = vec3f(0, 0, ball->radius);
 		ball->linVel = vec3f(0, 0, 0);
 		ball->launch = false;
 		wind = vec3f(0, 0, 0);
@@ -170,9 +171,24 @@ void cmdHelp(std::string* args, CannonBall* ball)
 		float x = 0;
 		x = stof(args[1]);
 		if (x > EPSILON)
+		{
 			ball->mass = x;
+			ball->gravForce = vec3f(0.0f, 0.0f, ball->mass * -1.0f * GRAVACC);
+		}
 		else
 			printf("Mass too low\n");
+	}
+	else if (args[0].compare("setradius") == 0)
+	{
+		float x = 0;
+		x = stof(args[1]);
+		if (x > EPSILON)
+		{
+			ball->radius = x;
+			ball->area = ball->radius * ball->radius * PI;
+		}
+		else
+			printf("Radius too low\n");
 	}
 	else if (args[0].compare("clear") == 0)
 	{
