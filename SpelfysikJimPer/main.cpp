@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 
 	CannonBall ball = CannonBall(263860.0f, 2.0f, vec3f(10, 0, 1.0f), vec3f(140.0f, 10.0f, 40.0f), vec3f(0.0f, 0.0f, 68.0f));
 	SDL_Thread* commandThreadID = SDL_CreateThread(commandHandler, "commandThread", (void*)&ball);
-	RopeBall rball = RopeBall(160000.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
+	RopeBall rball = RopeBall(1650000.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
 	
 	while (!exitCond)
 	{
