@@ -294,16 +294,16 @@ void Kollision(CannonBall* cBall, RopeBall* rBall)
 		float betpos=((cBall->radius + rBall->radius)- (Distance));
 
 		vec3f betPosV = vec3f(-betpos, -betpos, -betpos);
-		cBall->pos = betPosV + cBall->pos;
+		cBall->pos = rBall->pos + ep*(cBall->radius + rBall->radius + 0.1f);
 
-		vec3f temp = normalize(rBall->pos - rBall->anchorpoint);	
+		vec3f temp = normalize(rBall->anchorpoint - rBall->pos);
 
-		rBall->linVel = projectOnPlane(rBallFinalU,temp);
+		vec3f rLinVel = projectOnPlane(rBallFinalU,temp);
 
-		vec3f rAngV = cross((rBall->linVel / rBall->radius), temp);
-		rBall->angVel = rBall->angVel + rAngV;
+		vec3f rAngV = cross((rLinVel / rBall->ropelen), temp);
+		rBall->angVel = rAngV;
 
-
+		cBall->printInfo();
 
 	}
 
