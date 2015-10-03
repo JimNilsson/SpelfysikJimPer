@@ -9,6 +9,7 @@ void set3f(float& x, float& y, float& z, std::string* args);//Helper for command
 void initBGTex();
 void clearBackground();
 void cmdHelp(std::string* args, CannonBall* ball);
+void Kollision(CannonBall* cBall, RopeBall* rBall);
 
 SDL_mutex* gBallLock = NULL;
 SDL_mutex* gRenderLock = NULL;
@@ -49,6 +50,7 @@ int main(int argc, char** argv)
 		SDL_LockMutex(gBallLock);
 		if (ball.launch == true)
 		{
+			Kollision(&ball, &rball);
 			ball.update((float)timer.deltaTime, wind);
 		}
 		SDL_UnlockMutex(gBallLock);
@@ -253,3 +255,58 @@ void initBGTex()
 
 	gBGTex = SDL_CreateTextureFromSurface(gRend, gSurf);
 }
+
+void Kollision(CannonBall* cBall, RopeBall* rBall)
+{
+	
+	float Distance = length(cBall->pos - rBall->pos);
+
+	if (Distance <= (cBall->radius + rBall->radius))
+	{
+
+		float e = 0.60f; //Coefficient of restitution
+		float f = 0.16f; //Coefficient of friction
+		float fr = 0.08f; //Coefficient of rollfriction
+
+		vec3f ep = normalize(cBall->pos - rBall->pos);
+		vec3f en = cross(normalize(cross((cBall->linVel - rBall->linVel), ep)), ep);
+
+		vec3f er1 = ep;
+		vec3f er2 = ep*(-1);
+		//velocity before kollision against ep
+		float v1p = dot(cBall->linVel, ep);
+		float v2p = dot(rBall->linVel, ep);
+		float sumMass = cBall->mass + rBall->mass;
+		//Velocity after kollision
+		float u1p = ((cBall->mass - rBall->mass*e) / sumMass)*v1p + (((1 - e)*rBall->mass) / sumMass)*v2p;
+		float u2p = (((1 - e)*cBall->mass) / sumMass) *v1p + ((rBall->mass - cBall->mass*e) / sumMass)*v2p;
+		
+		vec3f cBallFinalU = cBall->linVel + (ep + en*f)*(u1p - v1p);
+		vec3f rBallFinalU = rBall->linVel + (ep + en*f)*(u2p - v2p);
+		
+		vec3f cAngVel = cross(er1, en)*(f*(u1p - v1p) / (2 * Distance));
+
+		cBall->linVel = cBallFinalU;
+		cBall->angVel = cAngVel;
+		
+		float betpos=((cBall->radius + rBall->radius)- (Distance));
+
+		vec3f betPosV = vec3f(betpos, betpos, betpos);
+		cBall->pos = betPosV + cBall->pos;
+
+		vec3f temp = normalize(rBall->pos - rBall->anchorpoint);	
+
+		rBall->linVel = projectOnPlane(rBallFinalU,temp);
+
+		vec3f rAngV = cross((rBall->linVel / rBall->radius), temp);
+		rBall->angVel = rBall->angVel + rAngV;
+
+
+
+	}
+
+}
+
+
+
+
