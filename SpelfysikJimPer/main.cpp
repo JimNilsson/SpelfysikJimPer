@@ -273,10 +273,12 @@ void Kollision(CannonBall* cBall, RopeBall* rBall)
 
 		vec3f er1 = ep;
 		vec3f er2 = ep*(-1);
+
 		//velocity before kollision against ep
 		float v1p = dot(cBall->linVel, ep);
 		float v2p = dot(rBall->linVel, ep);
 		float sumMass = cBall->mass + rBall->mass;
+
 		//Velocity after kollision
 		float u1p = ((cBall->mass - rBall->mass*e) / sumMass)*v1p + (((1 - e)*rBall->mass) / sumMass)*v2p;
 		float u2p = (((1 - e)*cBall->mass) / sumMass) *v1p + ((rBall->mass - cBall->mass*e) / sumMass)*v2p;
@@ -284,14 +286,14 @@ void Kollision(CannonBall* cBall, RopeBall* rBall)
 		vec3f cBallFinalU = cBall->linVel + (ep + en*f)*(u1p - v1p);
 		vec3f rBallFinalU = rBall->linVel + (ep + en*f)*(u2p - v2p);
 		
-		vec3f cAngVel = cross(er1, en)*(f*(u1p - v1p) / (2 * Distance));
+		vec3f cAngVel = cross(er1, en)*(f*(u1p - v1p) / (2 * cBall->radius));
 
 		cBall->linVel = cBallFinalU;
 		cBall->angVel = cAngVel;
 		
 		float betpos=((cBall->radius + rBall->radius)- (Distance));
 
-		vec3f betPosV = vec3f(betpos, betpos, betpos);
+		vec3f betPosV = vec3f(-betpos, -betpos, -betpos);
 		cBall->pos = betPosV + cBall->pos;
 
 		vec3f temp = normalize(rBall->pos - rBall->anchorpoint);	
