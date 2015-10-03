@@ -78,7 +78,7 @@ void RopeBall::render()
 	dest.h = (int)(2.0f * radius);
 	dest.w = (int)(2.0f * radius);
 	dest.x = (int)(pos.x - radius);
-	dest.y = -1 * (int)pos.z + (SCR_H / 2);
+	dest.y = -1 * (int)pos.z + (SCR_H / 2)-radius;
 	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
 
 	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4) - radius;
