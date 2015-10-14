@@ -38,9 +38,9 @@ int main(int argc, char** argv)
 
 	clearBackground();
 
-	CannonBall ball = CannonBall(263860.0f, 2.0f, vec3f(10, 0, 1.0f), vec3f(140.0f, 10.0f, 40.0f), vec3f(0.0f, 0.0f, 68.0f));
+	CannonBall ball = CannonBall(263860.0f, 2.0f, vec3f(10, 0, 1.0f), vec3f(100.0f, 0.0f, 66.0f), vec3f(0.0f, 0.0f, 0.0f));
 	SDL_Thread* commandThreadID = SDL_CreateThread(commandHandler, "commandThread", (void*)&ball);
-	RopeBall rball = RopeBall(1650000.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
+	RopeBall rball = RopeBall(850000.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
 	
 	while (!exitCond)
 	{
@@ -50,16 +50,21 @@ int main(int argc, char** argv)
 		SDL_LockMutex(gBallLock);
 		if (ball.launch == true)
 		{
-			Kollision(&ball, &rball);
+			Kollision(&ball, &rball); //Check if cannonball collides with pendulum(ropeBall)
 			ball.update((float)timer.deltaTime, wind);
+			if (length(ball.linVel) < 0.001f && ball.pos.z  - ball.radius < 0.01f && length(ball.fricForce) < 0.01f)
+			{
+				printf("The ball has stopped.\n");
+				ball.launch = false;
+			}
 		}
 		SDL_UnlockMutex(gBallLock);
 
 		SDL_LockMutex(gRenderLock);
 		
 		clearBackground();
-		ball.render();
 		rball.render();
+		ball.render();
 		SDL_RenderPresent(gRend);
 
 		SDL_UnlockMutex(gRenderLock);
@@ -82,7 +87,9 @@ int commandHandler(void* data)
 	std::string args[10];
 
 	std::cout << "Welcome to Cannonball Marksman. For a list of commands, type help" << std::endl;
-	while (args[0].compare("exit") != 0)
+	std::cout << "You control the cannonball by typing in commands here.\n";
+	std::cout << "Format of commands are <command> <arg1> <arg2> ... <argn>\n";
+	while (args[0].compare("exit") != 0 && args[0].compare("quit") != 0)
 	{
 		std::getline(std::cin, command);
 		int index = 0;
@@ -110,14 +117,14 @@ void cmdHelp(std::string* args, CannonBall* ball)
 		printf("exit                Exits the program\n");
 		printf("help                Lists available commands.\n");
 		printf("printinfo           Prints velocity and force acting on the cannonball\n");
-		printf("setlinvel x y z     Sets initial velocity of cannonball\n");
+		printf("setlinvel x y z     Sets velocity of cannonball\n");
 		printf("setangvel x y z     Sets angular velocity of ball\n");
 		printf("setwind x y z       Sets wind velocity\n");
 		printf("setmass m           Sets mass of cannonball\n");
-		printf("setradius r         Sets radius of cannonball");
+		printf("setradius r         Sets radius of cannonball\n");
+		printf("setpos x y z        Sets the position of the cannonball\n");
 		printf("reset               Sets position, lin. velocity, ang. velocity and wind to 0.\n");
 		printf("launch              Launches the ball\n");
-		printf("clear               Clears the trajectory from screen\n");
 		
 	}
 	else if (args[0].compare("printinfo") == 0)
@@ -138,7 +145,7 @@ void cmdHelp(std::string* args, CannonBall* ball)
 	}
 	else if (args[0].compare("reset") == 0)
 	{
-		ball->pos = vec3f(0, 0, ball->radius);
+		ball->pos = vec3f(10, 0, ball->radius);
 		ball->linVel = vec3f(0, 0, 0);
 		ball->launch = false;
 		wind = vec3f(0, 0, 0);
@@ -222,11 +229,7 @@ void set3f(float& x, float& y, float& z, std::string* args)
 
 void clearBackground()
 {
-
-
 	SDL_RenderCopy(gRend, gBGTex, NULL, NULL);
-
-	
 }
 
 void initBGTex()
@@ -264,15 +267,19 @@ void Kollision(CannonBall* cBall, RopeBall* rBall)
 	if (Distance <= (cBall->radius + rBall->radius))
 	{
 
-		float e = 0.60f; //Coefficient of restitution
-		float f = 0.16f; //Coefficient of friction
-		float fr = 0.08f; //Coefficient of rollfriction
+		printf("\n*** COLLISION WITH PENDULUM ***\n\n");
+		printf("Before collision:\n");
+		printf("Velocity:         %.2f %.2f %.2f\n", cBall->linVel.x, cBall->linVel.y, cBall->linVel.z);
+		printf("Angular Velocity: %.2f %.2f %.2f\n", cBall->angVel.x, cBall->angVel.y, cBall->angVel.z);
+		const float e = 0.60f; //Coefficient of restitution
+		const float f = 0.16f; //Coefficient of friction
 
 		vec3f ep = normalize(cBall->pos - rBall->pos);
-		vec3f en = cross(normalize(cross((cBall->linVel - rBall->linVel), ep)), ep);
+		vec3f angularComponent = cross(ep,cBall->angVel) * cBall->radius;
+		vec3f cVel = cBall->linVel + angularComponent;
+		vec3f en = cross(normalize(cross((cVel - rBall->linVel), ep)), ep);
 
-		vec3f er1 = ep;
-		vec3f er2 = ep*(-1);
+		vec3f er1 = ep * -1.0f;
 
 		//velocity before kollision against ep
 		float v1p = dot(cBall->linVel, ep);
@@ -286,24 +293,25 @@ void Kollision(CannonBall* cBall, RopeBall* rBall)
 		vec3f cBallFinalU = cBall->linVel + (ep + en*f)*(u1p - v1p);
 		vec3f rBallFinalU = rBall->linVel + (ep + en*f)*(u2p - v2p);
 		
-		vec3f cAngVel = cross(er1, en)*(f*(u1p - v1p) / (2 * cBall->radius));
+		//We assume the roll condition was not fullfilled
+		vec3f cAngVel = cross(er1, en)*(5.0f*f*(u1p - v1p) / (2.0f * cBall->radius));
 
 		cBall->linVel = cBallFinalU;
-		cBall->angVel = cAngVel;
+		cBall->angVel = cBall->angVel + cAngVel;
 		
-		float betpos=((cBall->radius + rBall->radius)- (Distance));
-
-		vec3f betPosV = vec3f(-betpos, -betpos, -betpos);
+		//Make sure we don't get stuck in a collision loop
 		cBall->pos = rBall->pos + ep*(cBall->radius + rBall->radius + 0.1f);
 
-		vec3f temp = normalize(rBall->anchorpoint - rBall->pos);
+		vec3f tangentPlane = normalize(rBall->anchorpoint - rBall->pos);
 
-		vec3f rLinVel = projectOnPlane(rBallFinalU,temp);
+		vec3f rLinVel = projectOnPlane(rBallFinalU,tangentPlane);
 
-		vec3f rAngV = cross((rLinVel / rBall->ropelen), temp);
+		vec3f rAngV = cross((rLinVel / rBall->ropelen), tangentPlane);
 		rBall->angVel = rAngV;
 
-		cBall->printInfo();
+		printf("After collision:\n");
+		printf("Velocity:         %.2f %.2f %.2f\n",cBall->linVel.x, cBall->linVel.y, cBall->linVel.z);
+		printf("Angular Velocity: %.2f %.2f %.2f\n", cBall->angVel.x, cBall->angVel.y, cBall->angVel.z);
 
 	}
 

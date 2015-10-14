@@ -3,6 +3,7 @@
 #include "PhysEntity.h"
 #include "vec3f.h"
 #include <SDL.h>
+#include <math.h>
 #include <Windows.h>
 #include "Constants.h"
 #include <iostream>

@@ -79,7 +79,15 @@ void RopeBall::render()
 	dest.w = (int)(2.0f * radius);
 	dest.x = (int)(pos.x - radius);
 	dest.y = -1 * (int)pos.z + (SCR_H / 2)-radius;
-	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
+	SDL_Point center;
+	center.x = dest.w / 2;
+	center.y = 0;
+	vec3f atopdir = normalize(anchorpoint - pos);
+	float angle = acos(dot(atopdir, vec3f(0, 0, 1.0f)));
+	angle = angle * 360.0f / (2.0f * PI);
+	if (pos.x > anchorpoint.x)
+		angle = -angle;
+	SDL_RenderCopyEx(gRend, spriteTex, NULL, &dest, angle, &center, SDL_FLIP_NONE);
 
 	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4) - radius;
 	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
@@ -89,8 +97,8 @@ void RopeBall::render()
 	a.x = (int)anchorpoint.x;
 	a.y = (int)((SCR_H / 2) - anchorpoint.z);
 	b.x = (int)pos.x;
-	b.y = (int)((SCR_H / 2) - pos.z);
-	SDL_SetRenderDrawColor(gRend, 0x00, 0xFF, 0x00, 0xFF);
+	b.y = (int)((SCR_H / 2) - pos.z - radius);
+	SDL_SetRenderDrawColor(gRend, 0xEF, 0xEF, 0xEF, 0xFF);
 	SDL_RenderDrawLine(gRend, a.x, a.y, b.x, b.y);
 	a.y = (int)((SCR_H / 2) - anchorpoint.y) + (SCR_H / 4);
 	b.y = (int)((SCR_H / 2) + pos.y) + (SCR_H / 4);

@@ -36,16 +36,18 @@ void CannonBall::update(float dt, vec3f wind)
 	float linVelMagnitude = length(linVel - wind);
 	float angVelMagnitude = length(angVel);
 	
-	if (pos.z - radius > 0.0f)//Only consider magnusforce if airborne
+	//Only consider magnusforce if airborne
+	if (pos.z - radius > 0.0f)
 	{
 		coeffMagnus = linVelMagnitude > EPSILON ? (radius * length(angVel)) / (linVelMagnitude) : 0;
 		magnusForce = cross(normalize(angVel), normalize(linVel - wind)) * (0.5f * coeffMagnus * AIR_DENSITY * linVelMagnitude * linVelMagnitude * area);
 	}
+	//Check if we are colliding with the ground
 	if (pos.z - radius <= 0.0f && linVel.z < 0.01f) //We have collision with ground
 	{
-		float e = 0.60f; //Coefficient of restitution
-		float f = 0.16f; //Coefficient of friction
-		float fr = 0.08f; //Coefficient of rollfriction
+		const float e = 0.60f; //Coefficient of restitution
+		const float f = 0.16f; //Coefficient of friction
+		const float fr = 0.08f; //Coefficient of rollfriction
 		vec3f ep = vec3f(0.0f, 0.0f, 1.0f); //Line of action will be perpendicular to the ground
 		//ep is also the normal of the ground plane
 		vec3f vvn = projectOnPlane(linVel, ep);
@@ -59,8 +61,9 @@ void CannonBall::update(float dt, vec3f wind)
 			float up = vp * e * -1.0f;
 			linVel = linVel + (ep + (en * f)) * (up - vp);
 			angVel = angVel + (cross(en, ep) * ((5.0f* f * (up - vp)) / (2.0f * radius)));
-			printf("Linvel = %.2f, %.2f, %.2f\n", linVel.x, linVel.y, linVel.z);
-			printf("Angvel = %.2f, %.2f, %.2f\n", angVel.x, angVel.y, angVel.z);
+			printf("\n\n*** COLLISION WITH GROUND *** \n\n");
+			printf("New linvel = %.2f, %.2f, %.2f\n", linVel.x, linVel.y, linVel.z);
+			printf("New angvel = %.2f, %.2f, %.2f\n", angVel.x, angVel.y, angVel.z);
 		}
 		else if (vvn != (vwn * -1.0f)) //glide phase
 		{
@@ -101,11 +104,11 @@ void CannonBall::render()
 	dest.x = (int)pos.x - radius;
 	dest.y = -1 * (int)pos.z - radius + (SCR_H / 2);
 	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
-	//SDL_BlitScaled(sprite, NULL, screen, &dest);
-	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4);
-	SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
-	//SDL_BlitScaled(sprite, NULL, screen, &dest);
 	
+	dest.y = (int)pos.y + (SCR_H / 2) + (SCR_H / 4);
+	//Only render it if it's on the bottom half of the screen (xy-plane)
+	if(dest.y > SCR_H / 2)
+		SDL_RenderCopy(gRend, spriteTex, NULL, &dest);
 }
 
 void CannonBall::printInfo()
