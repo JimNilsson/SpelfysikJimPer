@@ -18,6 +18,7 @@ SDL_Surface* gSurf = nullptr;
 SDL_Window* gWnd = nullptr;
 SDL_Renderer* gRend = nullptr;
 SDL_Texture* gBGTex = NULL;
+Cannon* cannon = nullptr;
 
 bool exitCond = false; //Only ever modified in commandHandler
 vec3f wind = vec3f(0.0f, 0.0f, 0.0f); // same as above
@@ -39,8 +40,11 @@ int main(int argc, char** argv)
 	clearBackground();
 
 	CannonBall ball = CannonBall(263860.0f, 2.0f, vec3f(10, 0, 1.0f), vec3f(100.0f, 0.0f, 66.0f), vec3f(0.0f, 0.0f, 0.0f));
-	SDL_Thread* commandThreadID = SDL_CreateThread(commandHandler, "commandThread", (void*)&ball);
 	RopeBall rball = RopeBall(850000.0f, 8.0f, 80.0f, vec3f(600.0f, 0.0f, 300.0f));
+	cannon = new Cannon(std::string("cannon.bmp"), vec3f(100, 0, 66));
+
+	SDL_Thread* commandThreadID = SDL_CreateThread(commandHandler, "commandThread", (void*)&ball);
+	
 	
 	while (!exitCond)
 	{
@@ -65,11 +69,13 @@ int main(int argc, char** argv)
 		clearBackground();
 		rball.render();
 		ball.render();
+		cannon->render();
 		SDL_RenderPresent(gRend);
 
 		SDL_UnlockMutex(gRenderLock);
 		
 	}
+	delete cannon;
 	SDL_WaitThread(commandThreadID, NULL);
 	SDL_DestroyMutex(gBallLock);
 	SDL_DestroyMutex(gRenderLock);
@@ -158,6 +164,7 @@ void cmdHelp(std::string* args, CannonBall* ball)
 		ball->linVel.x = x;
 		ball->linVel.y = y;
 		ball->linVel.z = z;
+		cannon->setDirection(ball->linVel);
 	}
 	else if (args[0].compare("setangvel") == 0)
 	{

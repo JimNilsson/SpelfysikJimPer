@@ -82,7 +82,9 @@ void RopeBall::render()
 	SDL_Point center;
 	center.x = dest.w / 2;
 	center.y = 0;
-	vec3f atopdir = normalize(anchorpoint - pos);
+	vec3f atopdir = anchorpoint - pos;
+	atopdir.y = 0;
+	atopdir = normalize(atopdir);
 	float angle = acos(dot(atopdir, vec3f(0, 0, 1.0f)));
 	angle = angle * 360.0f / (2.0f * PI);
 	if (pos.x > anchorpoint.x)

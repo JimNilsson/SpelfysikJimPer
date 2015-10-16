@@ -30,5 +30,20 @@ private:
 	
 };
 
+//Just for rendering a cannon
+class Cannon
+{
+public:
+	Cannon(std::string filename, vec3f direction);
+	~Cannon();
+	void render();
+	void setDirection(vec3f v);
+private:
+	Cannon() {}
+	SDL_Surface* sprite;
+	SDL_Texture* spriteTex;
+	vec3f direction;
+
+};
 
 #endif

@@ -127,3 +127,46 @@ void CannonBall::printInfo()
 		printf("GLIDING\n");
 
 }
+
+Cannon::Cannon(std::string filename, vec3f direction)
+{
+	this->direction = normalize(direction);
+	sprite = SDL_LoadBMP(filename.c_str());
+	SDL_SetColorKey(sprite, SDL_TRUE, SDL_MapRGB(sprite->format, 0, 0xFF, 0xFF));
+	spriteTex = SDL_CreateTextureFromSurface(gRend, sprite);
+	SDL_FreeSurface(sprite);
+}
+
+Cannon::~Cannon()
+{
+	SDL_DestroyTexture(spriteTex);
+}
+
+void Cannon::render()
+{
+	SDL_Rect dest;
+	dest.h = 12;
+	dest.w = 48;
+	dest.x = 6;
+	dest.y = (SCR_H / 2) - 8;
+	SDL_Point center;
+	center.x = 0;
+	center.y = 16;
+
+	vec3f xdir = vec3f(1.0f, 0.0f, 0.0f);
+	vec3f ldir = normalize(projectOnPlane(direction, vec3f(0, 1, 0)));
+	ldir = normalize(ldir);
+	float angle = -acos(dot(xdir, ldir)) * 360.0f / (2.0f * PI);
+	SDL_RenderCopyEx(gRend, spriteTex, NULL, &dest, angle, &center, SDL_FLIP_NONE);
+
+	dest.y = (SCR_H / 2) + (SCR_H / 4) - 6;
+	ldir = normalize(projectOnPlane(direction, vec3f(0, 0, 1)));
+	angle = -acos(dot(xdir, ldir)) * 360.0f / (2.0f * PI);
+	SDL_RenderCopyEx(gRend, spriteTex, NULL, &dest, angle, &center, SDL_FLIP_NONE);
+	
+}
+
+void Cannon::setDirection(vec3f v)
+{
+	direction = normalize(v);
+}
